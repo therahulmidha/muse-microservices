@@ -1,0 +1,38 @@
+------Important considerations-------
+Q. what if auth-service goes down? >> total system failure
+Mitigation Strategies:
+Circuit Breakers: Patterns like Resilience4j can "trip" the connection to the auth-service, allowing dependent services to fail fast and return a standard error instead of hanging.
+
+Fallbacks: Services can return cached data or a limited "guest" mode for non-critical features while the auth service is down.
+
+Stateless JWTs: If services use Self-Contained Tokens (like JWTs), they can often validate the user locally without calling the auth-service for every single request, providing a temporary safety net. 
+----------------------------------------------------------------------
+Q. How would you scale each microservice?
+Microservices are usually stateless, you scale them horizontally.
+
+Load Balancing: Run multiple instances (replicas) of the same microservice. Use a load balancer (like Nginx, AWS ALB, or a Kubernetes Ingress) to distribute incoming traffic across these instances.
+Database Sharding or Read Replicas: The Service layer is easy to scale, but the database often becomes the bottleneck. Use Read Replicas for heavy "get" requests and Sharding to split data across multiple database servers.
+Asynchronous Processing: For heavy logic (like generating a PDF or sending 10,000 emails), don't make the Service do it during the HTTP request. Instead, have the Service push a message to a Message Broker (like RabbitMQ or Kafka). A separate "Worker" service then handles the task in the background.
+Caching: Use an in-memory store like Redis in the Service layer to store frequently accessed data, reducing the load on your primary database.
+----------------------------------------------------------------------
+
+Q. What are downsides of API Gateway?
+Single point of failure
+Needs scaling
+
+Alternative?
+Service mesh (advanced)
+Direct service auth
+----------------------------------------------------------------------
+// TODO:
+zod validators,
+env files
+
+----------------------------------------------------------------------
+
+
+----------------------------------------------------------------------
+
+
+----------------------------------------------------------------------
+

@@ -1,0 +1,141 @@
+docker run --name postgres-db \
+  -e POSTGRES_USER=admin \
+  -e POSTGRES_PASSWORD=admin \
+  -e POSTGRES_DB=authdb \
+  -p 5432:5432 \
+  -d postgres
+
+// sync db changes
+npx prisma migrate dev --name init
+npx prisma migrate dev --name outbox
+
+// generate client
+ npx prisma generate 
+
+docker-compose up --build // --build: Ignore the existing image; rebuild it from scratch using the current files before starting the containers."
+
+docker-compose up --build --scale auth-service=2
+
+docker usage is good but all manual. Scaling has to be taken care of. K8S takes care of this automatically.
+
+--- Kubernetes installation- ---
+Since you cannot use Docker Desktop, the best way to run Kubernetes on a Mac is to use a lightweight virtual machine manager as a "bridge" for the Kubernetes cluster.
+Colima is an open-source, lightweight alternative to Docker Desktop that includes built-in Kubernetes support
+brew install kubectl
+colima start --kubernetes // This creates a Linux VM that automatically runs a Kubernetes cluster for you
+
+docker compose is all manual work. → manual scaling + manual routing
+Kubernetes → auto scaling + auto discovery + auto load balancing
+
+Kubernetes doesn’t use local folders—it uses images. Build the images required.
+docker build -t auth-service:latest ./auth-service
+docker build -t journal-service:latest ./journal-service
+docker build -t api-gateway:latest ./api-gateway
+
+| Thing      | Meaning         |
+| ---------- | --------------- |
+| Docker     | builds image    |
+| Kubernetes | runs containers |
+| Deployment file | manages pods and scaling   | 
+| Service file   | load balances  and service discovery  |
+| HPA file   | Horizontal Pod Autoscaler  |
+
+
+In Kubernetes, a Cluster is the overall hardware/software environment where your applications live, consisting of at least one master node and multiple worker machines called Nodes.
+
+Think of it like a restaurant: the Cluster is the entire building, the Deployment is the kitchen staff managing how many cooks are working, and the Service is the waiter who takes orders and brings food to the right table.
+
+After deployment and service files are created, run the following command to tell Kubernetes to make the cluster match the state defined in your files
+kubectl apply -f k8s/
+
+kubectl get pods // equals number of replicas
+kubectl get services // 1 
+
+// Port forward (creates a tunnel from your computer to the k8s service) => maps Port 3001 on your Mac/PC (localhost) to Port 3001 on the Service inside the cluster.
+kubectl port-forward service/auth-service 3001:3001
+
+http://localhost:3001/auth/login
+Call → http://auth-service
+
+in case of errors in kubectl get pods, check logs:
+kubectl logs <pod-name>
+kubectl describe pod <pod-name>
+
+kubectl port-forward service/gateway-service 3000:3000
+
+Client → Gateway → Auth / Journal → DB
+
+After any code change:
+1. Rebuild the images
+2. apply k8s service and deployment files using: 
+kubectl apply -f k8s/
+
+To delete pods
+kubectl delete pod -l app=auth
+
+# Metrics server for auto scaling
+kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
+
+verify: 
+kubectl get deployment metrics-server -n kube-system
+
+check metrics:
+kubectl top pods
+
+--- SCALING ----
+HPA: Horizontal Pod Autoscaler
+Create hpa file and stimulate load:
+while true; do curl http://localhost:3000/auth/login; done
+and see logs to verify auto scaling: kubectl get pods -w
+
+Problem with HPA : CPU-based, A request may be light CPU but heavy DB calls
+=> Real Systems scale on:
+Requests per second (RPS)
+Response latency
+Queue length
+Kafka lag
+Active users
+
+
+--- METRICS BASED SCALING ----
+Using helm (package manager for k8s, like apt in linux, brew in mac), install the libraries required for metrics, Observability, traceability into k8s cluster so that pods are created and you access them to analyze the info required for your applications. 
+
+App (Node.js)
+     ↓ exposes /metrics
+Prometheus (collects metrics)
+     ↓
+Prometheus Adapter
+     ↓
+Kubernetes HPA (uses custom metrics)
+
+=> Real Production Patterns (Top companies scale using)
+
+API Gateway → RPS scaling
+Workers → Queue length scaling
+Streaming → Kafka lag scaling
+
+=> Later Upgrade Your System (Optional but Powerful)
+
+You can:
+
+Add Grafana dashboards
+Track latency (histograms)
+Add alerting (Slack/email)
+
+---- Observability ---
+How to find which service breaks, slowed, or any errors came where? Using logs + traces
+Client Request
+     ↓
+API Gateway
+     ↓
+Auth Service → DB
+
+Logs → Centralized (Loki + visualize via Grafana; alternative: ELK but loki grafana simpler)
+Traces → Jaeger (NEW 🔥)
+
+After setting up Traces in node services, you use NodeSDK from opentelemetry library to start capturing tracesconst { NodeSDK } = require('@opentelemetry/sdk-node');
+
+
+---- CI/CD ----
+While adding secrets for github actions, you would need KUBE_CONFIG
+to get this type-> cat ~/.kube/config -> Copy entire content → paste in secret

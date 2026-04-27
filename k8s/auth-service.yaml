@@ -1,0 +1,17 @@
+# auth-service (DNS name) → routes to all pods automatically
+apiVersion: v1
+kind: Service
+metadata:
+  name: auth-service
+
+spec:
+  selector:
+    app: auth
+
+  ports:
+    - protocol: TCP
+      port: 3001
+      targetPort: 3001
+
+  type: ClusterIP
+

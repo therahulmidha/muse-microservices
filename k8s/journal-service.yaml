@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: journal-service
+
+spec:
+  selector:
+    app: journal
+
+  ports:
+    - port: 3002
+      targetPort: 3002
+
+  type: ClusterIP

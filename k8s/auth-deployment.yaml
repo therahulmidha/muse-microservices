@@ -1,0 +1,35 @@
+# manages pods and scaling
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: auth-deployment
+
+spec:
+  replicas: 3
+
+  selector:
+    matchLabels:
+      app: auth
+
+  template:
+    metadata:
+      labels:
+        app: auth
+
+    spec:
+      containers:
+        - name: auth
+          image: auth-service:latest
+          imagePullPolicy: Never 
+          resources:
+            requests:
+              cpu: "100m"
+            limits:
+              cpu: "500m"
+          env:
+            - name: DATABASE_URL
+              value: postgresql://admin:admin@postgres:5432/authdb
+            - name: RABBITMQ_URL
+              value: amqp://guest:guest@rabbitmq:5673
+          ports:
+            - containerPort: 3001

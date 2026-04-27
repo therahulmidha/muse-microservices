@@ -1,0 +1,51 @@
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsImVtYWlsIjoiam9obkBleGFtcGxlLmNvbSIsImlhdCI6MTc3NjA1MDY0MiwiZXhwIjoxODA3NjA4MjQyfQ.1xaYnFH56wCQTd3axswHTvbWRyS4bcN0594Je9yEyWk
+@tokenDocker=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsImVtYWlsIjoiam9objNAZXhhbXBsZS5jb20iLCJpYXQiOjE3NzYwNjg4ODIsImV4cCI6MTgwNzYyNjQ4Mn0.n0htwtG1NYhAr6cE9g3ecYeRKGu9NR2wspVq1hk8tB0
+@API_GATEWAY_ENDPOINT=http://localhost:3000
+# Request Start
+# A simple GET request
+GET {{API_GATEWAY_ENDPOINT}}
+
+### Request End
+
+# Request Start
+# A POST request For user signup
+POST {{API_GATEWAY_ENDPOINT}}/auth/signup
+Content-Type: application/json
+
+{
+  "password": "JohnDoe",
+  "email": "john3@example.com"
+}
+
+### Request End
+
+# Request Start
+# A POST request For user login
+POST {{API_GATEWAY_ENDPOINT}}/auth/login
+# POST http://auth-service/auth/login
+Content-Type: application/json
+
+{
+  "password": "JohnDoe",
+  "email": "john3@example.com"
+}
+
+### Request End
+
+# A POST request to create a journal entry
+POST {{API_GATEWAY_ENDPOINT}}/journal/create
+Content-Type: application/json
+authorization: Bearer {{token}}
+
+{
+  "text": "sample text"
+}
+
+### Request End
+
+# A GET request to fetch journals
+GET {{API_GATEWAY_ENDPOINT}}/journal
+Content-Type: application/json
+authorization: Bearer {{token}}
+
+### Request End
