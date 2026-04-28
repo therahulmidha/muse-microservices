@@ -16,3 +16,6 @@ cd ai-service
 python3 -m venv venv
 source venv/bin/activate
 pip install fastapi uvicorn transformers torch
+
+Run the app:
+uvicorn main:app --reload --port 8000
