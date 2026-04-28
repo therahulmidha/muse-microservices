@@ -1,0 +1,58 @@
+name: Deploy to Kubernetes
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # - name: Run tests
+      #   run: npm test
+
+      - name: Login to DockerHub
+        run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+
+      - name: Set image tag
+        run: echo "IMAGE_TAG=${GITHUB_SHA}" >> $GITHUB_ENV
+
+      - name: Build & Push Gateway
+        run: |
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/gateway:${{ env.IMAGE_TAG }} ./gateway
+          docker push ${{ secrets.DOCKER_USERNAME }}/gateway:${{ env.IMAGE_TAG }}
+
+      - name: Build & Push Auth
+        run: |
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/auth:${{ env.IMAGE_TAG }} ./auth
+          docker push ${{ secrets.DOCKER_USERNAME }}/auth:${{ env.IMAGE_TAG }}
+      
+      - name: Build & Push journal
+        run: |
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/journal:${{ env.IMAGE_TAG }} ./journal
+          docker push ${{ secrets.DOCKER_USERNAME }}/journal:${{ env.IMAGE_TAG }}
+
+      - name: Setup kubeconfig
+        run: |
+          mkdir -p $HOME/.kube
+          echo "${{ secrets.KUBE_CONFIG }}" > $HOME/.kube/config
+
+      - name: Deploy to Kubernetes
+        run: |
+          kubectl set image deployment/gateway-deployment gateway=${{ secrets.DOCKER_USERNAME }}/gateway:${{ env.IMAGE_TAG }}
+          kubectl set image deployment/auth-deployment auth=${{ secrets.DOCKER_USERNAME }}/auth:${{ env.IMAGE_TAG }}
+          kubectl set image deployment/journal-deployment journal=${{ secrets.DOCKER_USERNAME }}/journal:${{ env.IMAGE_TAG }}
+
+      - name: Verify Deployment Rollout
+        run: |
+          kubectl rollout status deployment/gateway-deployment
+          kubectl rollout status deployment/auth-deployment
+          kubectl rollout status deployment/journal-deployment
+
+      - name: Check Pods
+        run: kubectl get pods
