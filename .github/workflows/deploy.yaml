@@ -24,17 +24,17 @@ jobs:
 
       - name: Build & Push Gateway
         run: |
-          docker build -t ${{ secrets.DOCKER_USERNAME }}/gateway:${{ env.IMAGE_TAG }} ./gateway
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/gateway:${{ env.IMAGE_TAG }} ./api-gateway
           docker push ${{ secrets.DOCKER_USERNAME }}/gateway:${{ env.IMAGE_TAG }}
 
       - name: Build & Push Auth
         run: |
-          docker build -t ${{ secrets.DOCKER_USERNAME }}/auth:${{ env.IMAGE_TAG }} ./auth
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/auth:${{ env.IMAGE_TAG }} ./auth-service
           docker push ${{ secrets.DOCKER_USERNAME }}/auth:${{ env.IMAGE_TAG }}
       
       - name: Build & Push journal
         run: |
-          docker build -t ${{ secrets.DOCKER_USERNAME }}/journal:${{ env.IMAGE_TAG }} ./journal
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/journal:${{ env.IMAGE_TAG }} ./journal-service
           docker push ${{ secrets.DOCKER_USERNAME }}/journal:${{ env.IMAGE_TAG }}
 
       - name: Setup kubeconfig
