@@ -1,0 +1,2 @@
+# Muse Microservices
+This is a microservices based project containing several services required by multiple apps that I am working on. Through this, I am practicing several microservices concepts and trying to create some useful apps. Will update about each service as and when they become ready.
