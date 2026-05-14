@@ -98,7 +98,24 @@ app.use(createProxyMiddleware({
   }
 }));
 
-app.use(authMiddleware);
+app.use(createProxyMiddleware({
+  pathFilter: '/ai/health', 
+  target: process.env.AI_SERVICE_URL || 'http://localhost:3003',
+  changeOrigin: true,
+  on: {
+    proxyReq: (proxyReq, req, res) => {
+      const request = req as any;
+      if (request.user) {
+        proxyReq.setHeader('x-user-id', request.user.userId);
+      }
+
+      proxyReq.setHeader('x-correlation-id', request.correlationId);
+      fixRequestBody(proxyReq, req);
+    }
+  }
+}));
+
+// app.use(authMiddleware);
 
 /**
  * Journal Service Proxy
@@ -171,6 +188,6 @@ app.use(createProxyMiddleware({
 
 const PORT = 3000;
 
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
   logger.info(`API Gateway running on port ${PORT}`);
 });

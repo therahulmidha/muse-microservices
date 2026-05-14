@@ -5,6 +5,9 @@ docker run --name postgres-db \
   -p 5432:5432 \
   -d postgres
 
+docker run -d --name test-redis -p 6379:6379 redis:alpine
+
+
 // sync db changes
 npx prisma migrate dev --name init
 npx prisma migrate dev --name outbox

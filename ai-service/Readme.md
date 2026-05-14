@@ -1,5 +1,5 @@
 # AI Service
-This is a python based AI service with an initial goal to build a chatbot to answer queries using LLM and RAG.
+This is a RAG (Retrieval-Augmented Generation) application. It lets you upload a PDF file, extracts the text, and allows you to ask questions about that specific PDF using an AI model.
 
 Next.js
    ↓
@@ -18,6 +18,7 @@ cd ai-service
 python3 -m venv venv
 source venv/bin/activate
 pip install fastapi uvicorn transformers torch
+pip install -r requirements.txt
 
 Run the app:
 uvicorn main:app --reload --port 3003

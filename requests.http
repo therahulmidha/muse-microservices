@@ -1,6 +1,7 @@
 @token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsImVtYWlsIjoiam9obkBleGFtcGxlLmNvbSIsImlhdCI6MTc3NjA1MDY0MiwiZXhwIjoxODA3NjA4MjQyfQ.1xaYnFH56wCQTd3axswHTvbWRyS4bcN0594Je9yEyWk
 @tokenDocker=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsImVtYWlsIjoiam9objNAZXhhbXBsZS5jb20iLCJpYXQiOjE3NzYwNjg4ODIsImV4cCI6MTgwNzYyNjQ4Mn0.n0htwtG1NYhAr6cE9g3ecYeRKGu9NR2wspVq1hk8tB0
 @API_GATEWAY_ENDPOINT=http://localhost:3000
+@AI_SERVICE_ENDPOINT=http://localhost:3003
 # Request Start
 # A simple GET request
 GET {{API_GATEWAY_ENDPOINT}}
@@ -49,3 +50,23 @@ Content-Type: application/json
 authorization: Bearer {{token}}
 
 ### Request End
+
+
+# A GET request to fetch ai health
+GET {{API_GATEWAY_ENDPOINT}}/ai/health
+Content-Type: application/json
+authorization: Bearer {{token}}
+
+### Request End
+
+# A POST request for ai chat
+POST {{API_GATEWAY_ENDPOINT}}/ai/chat?
+Content-Type: application/json
+
+{
+    "query": "What information is inside the uploaded document?"
+}
+
+### Request End
+
+
