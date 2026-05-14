@@ -1,0 +1,13 @@
+fastapi
+uvicorn[standard]
+transformers
+torch
+langchain
+langchain-community
+faiss-cpu
+pypdf
+sentence-transformers
+huggingface_hub
+redis
+python-multipart
+numpy

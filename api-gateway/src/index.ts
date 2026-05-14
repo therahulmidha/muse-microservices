@@ -121,6 +121,52 @@ app.use(createProxyMiddleware({
   }
 }));
 
+// app.post('/ai/chat', async (req, res) => {
+//   const response = await axios.post('http://ai-service:8000/ai/chat', req.body);
+//   res.json(response.data);
+// });
+
+// FOR AI Service
+// Admin auth
+// File size limit
+// PDF validation
+// rate limit
+
+app.use(createProxyMiddleware({
+  pathFilter: '/ai/chat', 
+  target: process.env.AI_SERVICE_URL || 'http://localhost:3003',
+  changeOrigin: true,
+  on: {
+    proxyReq: (proxyReq, req, res) => {
+      const request = req as any;
+      if (request.user) {
+        proxyReq.setHeader('x-user-id', request.user.userId);
+      }
+
+      proxyReq.setHeader('x-correlation-id', request.correlationId);
+      fixRequestBody(proxyReq, req);
+    }
+  }
+}));
+
+app.use(createProxyMiddleware({
+  pathFilter: '/ai/upload', 
+  target: process.env.AI_SERVICE_URL || 'http://localhost:3003',
+  changeOrigin: true,
+  on: {
+    proxyReq: (proxyReq, req, res) => {
+      const request = req as any;
+      if (request.user) {
+        proxyReq.setHeader('x-user-id', request.user.userId);
+      }
+
+      proxyReq.setHeader('x-correlation-id', request.correlationId);
+      fixRequestBody(proxyReq, req);
+    }
+  }
+}));
+
+
 
 
 const PORT = 3000;
