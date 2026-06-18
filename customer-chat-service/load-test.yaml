@@ -1,0 +1,12 @@
+# npx artillery run load-test.yaml
+config:
+  target: "ws://localhost:3005"
+  phases:
+    - duration: 60
+      arrivalRate: 50 # Spawns 50 new clients every second for a minute
+scenarios:
+  - engine: ws
+    flow:
+      - send: '{"userId": "cust-123", "from": "cust", "type": "ONLINE", "text": ""}'
+      - think: 2
+      - send: '{"userId": "cust-123", "from": "cust", "type": "CHAT", "text": "Hello Support"}'

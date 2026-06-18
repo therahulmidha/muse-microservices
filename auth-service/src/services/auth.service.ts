@@ -43,7 +43,6 @@ export const signupUser = async (data: any) => {
 
 export const loginUser = async (data: any) => {
   const user = await findUserByEmail(data.email);
-
   if (!user) {
     throw new Error('User not found');
   }

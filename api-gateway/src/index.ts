@@ -10,14 +10,45 @@ import { loginSchema } from './validators/auth.validators';
 import { logger } from './utils/logger';
 import { v4 as uuidv4 } from 'uuid';
 import { httpRequestCounter, register } from './utils/prometheus';
+import  http from 'http';
+import  cors from 'cors';
 
 const limiter = rateLimit({
   windowMs: 60 * 1000, // 10 secs // 15 * 60 * 1000, // 1 mins
   max: 30, // max 100 requests per IP
-  message: 'Too many requests, please try later'
+  message: 'Too many requests, please try later',
+  skip: (req, res) => req.ip === '127.0.0.1' 
+  // OR (req, res) => process.env.NODE_ENV === 'test'
 });
 
 const app = express();
+app.use(cors());
+const server = http.createServer(app);
+
+const wsProxy = createProxyMiddleware({
+  target: process.env.CUSTOMER_SERVICE_URL ||'ws://localhost:3005',
+  changeOrigin: true,
+  ws: true,
+});
+
+app.use('/socket', wsProxy);
+server.on('upgrade', wsProxy.upgrade);
+
+// for revealing which instance handled the request; useful for debugging
+app.use((_, res, next) => {
+  res.setHeader(
+    'X-Gateway-Instance',
+    process.env.PORT || '3000'
+  );
+
+  next();
+})
+
+// check nginx headers
+app.get('/headers', (req, res) => {
+  res.json(req.headers);
+});
+
 app.use(limiter);
 app.use(helmet());
 
@@ -35,7 +66,7 @@ app.use((req, res, next) => {
   next();
 });
 app.get('/', (req: Request, res: Response) => {
-  res.send('Hello API Gateway');
+  res.json({ message: 'Hello API Gateway'});
 });
 app.use(express.json());
 
@@ -79,7 +110,7 @@ const authLimiter = rateLimit({
   max: 50
 });
 
-app.use('/auth/login', authLimiter, validateRequestBody(loginSchema));
+app.use('/auth/login', /* authLimiter ,*/ validateRequestBody(loginSchema));
 
 /**
  * Auth Service Proxy
@@ -115,7 +146,7 @@ app.use(createProxyMiddleware({
   }
 }));
 
-// app.use(authMiddleware);
+app.use(authMiddleware);
 
 /**
  * Journal Service Proxy
@@ -186,8 +217,6 @@ app.use(createProxyMiddleware({
 
 
 
-const PORT = 3000;
-
-app.listen(PORT, '0.0.0.0', () => {
-  logger.info(`API Gateway running on port ${PORT}`);
+server.listen(parseInt(process.env.PORT ?? '3000'), '127.0.0.1', () => {
+  logger.info(`API Gateway running on port ${process.env.PORT ?? '3000'}`);
 });

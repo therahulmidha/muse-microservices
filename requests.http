@@ -1,6 +1,6 @@
 @token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsImVtYWlsIjoiam9obkBleGFtcGxlLmNvbSIsImlhdCI6MTc3NjA1MDY0MiwiZXhwIjoxODA3NjA4MjQyfQ.1xaYnFH56wCQTd3axswHTvbWRyS4bcN0594Je9yEyWk
 @tokenDocker=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsImVtYWlsIjoiam9objNAZXhhbXBsZS5jb20iLCJpYXQiOjE3NzYwNjg4ODIsImV4cCI6MTgwNzYyNjQ4Mn0.n0htwtG1NYhAr6cE9g3ecYeRKGu9NR2wspVq1hk8tB0
-@API_GATEWAY_ENDPOINT=http://localhost:3000
+@API_GATEWAY_ENDPOINT=https://localhost
 @AI_SERVICE_ENDPOINT=http://localhost:3003
 # Request Start
 # A simple GET request
@@ -23,7 +23,6 @@ Content-Type: application/json
 # Request Start
 # A POST request For user login
 POST {{API_GATEWAY_ENDPOINT}}/auth/login
-# POST http://auth-service/auth/login
 Content-Type: application/json
 
 {
